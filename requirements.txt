@@ -2,3 +2,5 @@ streamlit
 openrouteservice
 pandas
 openpyxl
+folium
+streamlit-folium
