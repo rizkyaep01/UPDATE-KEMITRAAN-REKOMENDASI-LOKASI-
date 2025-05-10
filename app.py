@@ -9,11 +9,12 @@ import random
 from geopy.distance import geodesic
 from sklearn.neighbors import LocalOutlierFactor
 import numpy as np
+import base64
 
-# Set up page configuration with custom title and logo
+# Set page config with logo
 st.set_page_config(page_title="D'FRESTO Tools", layout="centered", page_icon="logo dfresto.png")
 
-# Ubah latar belakang aplikasi menjadi merah
+# Ubah latar belakang menjadi merah
 st.markdown(
     """
     <style>
@@ -23,6 +24,10 @@ st.markdown(
     </style>
     """, unsafe_allow_html=True)
 
+# Membaca logo dan mengonversi menjadi format base64
+with open("logo dfresto.png", "rb") as logo_file:
+    logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
+
 # Menambahkan logo di bagian judul
 st.markdown(
     """
@@ -30,12 +35,9 @@ st.markdown(
         <img src="data:image/png;base64,{}" width="50" height="50" /> 
         D'FRESTO FRIED CHICKEN
     </h1>
-    """.format(open("logo dfresto.png", "rb").read().encode("base64").decode("utf-8")),
+    """.format(logo_base64),
     unsafe_allow_html=True
 )
-
-# Title and file upload section
-st.title("🍗 D'FRESTO FRIED CHICKEN")
 
 st.subheader("📁 Upload File Data Lokasi Mitra")
 uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
