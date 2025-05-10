@@ -14,12 +14,18 @@ import base64
 # Set page config with logo
 st.set_page_config(page_title="D'FRESTO Tools", layout="centered", page_icon="logo dfresto.png")
 
-# Ubah latar belakang menjadi merah
+# Mengubah latar belakang menjadi merah
 st.markdown(
     """
     <style>
-    .css-1d391kg {
+    body {
         background-color: #FF0000; /* Red background */
+    }
+    .reportview-container {
+        background-color: #FF0000; /* Red background for the container */
+    }
+    .css-18e3th9 {
+        background-color: #FF0000; /* Ensuring specific container area is also red */
     }
     </style>
     """, unsafe_allow_html=True)
