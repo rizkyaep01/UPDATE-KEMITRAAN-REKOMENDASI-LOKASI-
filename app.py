@@ -1,6 +1,3 @@
-# === REQUIREMENTS ===
-# pip install streamlit pandas gspread oauth2client openrouteservice folium streamlit-folium geopy scikit-learn
-
 import streamlit as st
 import pandas as pd
 import openrouteservice
@@ -13,23 +10,6 @@ from geopy.distance import geodesic
 from sklearn.neighbors import LocalOutlierFactor
 import numpy as np
 import base64
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
-# ===== Google Sheets Setup =====
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
-client_gs = gspread.authorize(creds)
-
-# ===== Load Data from Google Sheets =====
-def load_data_from_gsheet(spreadsheet_id, worksheet_name):
-    sheet = client_gs.open_by_key(spreadsheet_id).worksheet(worksheet_name)
-    data = sheet.get_all_records()
-    df = pd.DataFrame(data)
-    df.columns = df.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
-    df["LATITUDE"] = df["LATITUDE"].astype(str).str.replace(",", ".").astype(float)
-    df["LONGITUDE"] = df["LONGITUDE"].astype(str).str.replace(",", ".").astype(float)
-    return df
 
 # ===== Logo Base64 Encoding =====
 with open("logo dfresto.png", "rb") as image_file:
@@ -49,19 +29,21 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.subheader("🔗 Masukkan Google Spreadsheet")
-spreadsheet_id = st.text_input("Masukkan ID Spreadsheet")
-worksheet_name = st.text_input("Masukkan Nama Worksheet", value="Sheet1")
+st.subheader("📁 Upload File Data Lokasi Mitra")
+uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
 
-if spreadsheet_id:
+if uploaded_file:
     try:
-        df = load_data_from_gsheet(spreadsheet_id, worksheet_name)
+        df = pd.read_excel(uploaded_file)
+        df.columns = df.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
 
         if not all(col in df.columns for col in ["MITRA", "LATITUDE", "LONGITUDE"]):
             st.error("❌ Kolom wajib (MITRA, LATITUDE, LONGITUDE) tidak ditemukan.")
             st.stop()
 
-        st.success("✅ Data berhasil dimuat dari Google Sheets!")
+        df["LATITUDE"] = df["LATITUDE"].astype(str).str.replace(",", ".").astype(float)
+        df["LONGITUDE"] = df["LONGITUDE"].astype(str).str.replace(",", ".").astype(float)
+        st.success("✅ File berhasil dibaca!")
 
         menu = st.radio("Pilih Menu:", [
             "📌 Lihat Lokasi Mitra",
@@ -288,8 +270,7 @@ if spreadsheet_id:
                 else:
                     st.warning("⚠️ Lokasi sudah padat, tidak ada rekomendasi yang aman ditemukan.")
 
-       
     except Exception as e:
-        st.error(f"❌ Gagal membaca Google Sheets: {e}")
+        st.error(f"❌ Terjadi kesalahan: {e}")
 else:
-    st.info("📄 Masukkan ID Spreadsheet Google Sheets terlebih dahulu.")
+    st.info("📄 Silakan upload file Excel terlebih dahulu untuk memulai.")
