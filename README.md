@@ -6,7 +6,7 @@ Aplikasi interaktif berbasis Streamlit untuk memudahkan analisis lokasi mitra da
 
 ## 🖼️ Tampilan Awal Aplikasi
 
-![Tampilan Awal](tampilan20%awal.jpeg)
+![Tampilan Awal](tampilan%20awal.jpeg)
 
 ---
 
