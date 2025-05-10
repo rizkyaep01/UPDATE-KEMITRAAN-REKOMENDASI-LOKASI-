@@ -171,12 +171,14 @@ if uploaded_file:
             if 'cek_ditekan' not in st.session_state:
                 st.session_state.cek_ditekan = False
 
+            # Tentukan lat_center dan lon_center sebelum digunakan
+            lat_center = df["LATITUDE"].mean()
+            lon_center = df["LONGITUDE"].mean()
+
             # Tombol pertama untuk memulai pencarian rekomendasi
             if st.button("🔄 Cari Rekomendasi Lokasi Baru"):
                 st.session_state.rekomendasi_lokasi = []  # Reset rekomendasi saat pencarian pertama
                 st.session_state.cek_ditekan = True
-                lat_center = df["LATITUDE"].mean()
-                lon_center = df["LONGITUDE"].mean()
 
                 # Fungsi untuk mencari titik acak dalam radius 2 km
                 def titik_acak_dalam_radius(lat, lon, radius_km, n=50):
