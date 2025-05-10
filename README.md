@@ -40,38 +40,6 @@ Aplikasi berbasis Streamlit untuk membantu tim D'FRESTO Fried Chicken dalam:
 
 ---
 
-## 🧭 Pilih Menu Fitur
-
-### 📌 Lihat Lokasi Mitra
-- Menampilkan lokasi semua mitra pada peta interaktif.
-- Setiap mitra ditandai dengan ikon logo **D'FRESTO**.
-
----
-
-### 📏 Cek Jarak Antar Mitra
-
-1. Masukkan koordinat toko baru:
-   - **Latitude**
-   - **Longitude**
-2. Masukkan **API Key OpenRouteService**  
-   👉 Daftar gratis di: [https://openrouteservice.org/dev/#/signup](https://openrouteservice.org/dev/#/signup)
-3. Klik tombol **"🚦 Cek Jarak Mitra"**
-4. Sistem akan:
-   - Menghitung **jarak jalan** ke 5 mitra terdekat
-   - Menandai mitra dengan jarak **< 1.5 km** sebagai **"Terlalu Dekat"**
-5. Klik **"📍 Lihat Peta Mitra"** untuk menampilkan peta interaktif.
-
----
-
-### 🌟 Rekomendasi Lokasi Baru
-
-1. Klik tombol **"🔄 Cari Rekomendasi Lokasi Baru"**
-2. Sistem akan mencari dan menampilkan titik-titik baru yang:
-   - **Aman** (berjarak > 1.5 km dari semua mitra)
-   - **Masih dalam jalur sebaran mitra**
-3. Hasil ditampilkan dalam bentuk peta interaktif dengan ikon bintang.
----
-
 ## 📁 Format Data Excel (Contoh)
 
 | MITRA       | LATITUDE   | LONGITUDE   |
