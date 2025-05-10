@@ -4,6 +4,7 @@ Aplikasi berbasis Streamlit untuk membantu tim D'FRESTO Fried Chicken dalam:
 - Menampilkan lokasi mitra di peta
 - Mengecek jarak antar mitra agar tidak terlalu berdekatan
 - Memberikan rekomendasi lokasi baru berdasarkan persebaran eksisting
+![Alt Teks](path/ke/tampilan utama.png)
 
 ---
 
