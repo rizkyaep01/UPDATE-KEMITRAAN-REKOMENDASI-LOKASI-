@@ -165,65 +165,91 @@ if uploaded_file:
         elif menu == "🌟 Rekomendasi Lokasi Baru":
             st.info("🧠 Sistem akan mencari titik acak dalam radius 2 km dari pusat semua mitra dan menyaring yang aman (jarak > 1.5 km).")
 
-            lat_center = df["LATITUDE"].mean()
-            lon_center = df["LONGITUDE"].mean()
+            # Cek jika rekomendasi lokasi sudah ada di session_state
+            if 'rekomendasi_lokasi' not in st.session_state:
+                st.session_state.rekomendasi_lokasi = None
+            if 'cek_ditekan' not in st.session_state:
+                st.session_state.cek_ditekan = False
 
-            def titik_acak_dalam_radius(lat, lon, radius_km, n=50):
-                hasil = []
-                for _ in range(n * 3):  # lebih banyak untuk cadangan
-                    dx = random.uniform(-radius_km, radius_km) / 111  # approx degree per km
-                    dy = random.uniform(-radius_km, radius_km) / 111
-                    new_lat = lat + dx
-                    new_lon = lon + dy
-                    if geodesic((lat, lon), (new_lat, new_lon)).km <= radius_km:
-                        hasil.append((new_lat, new_lon))
-                    if len(hasil) >= n:
+            # Tombol pertama untuk memulai pencarian rekomendasi
+            if st.button("🔄 Cari Rekomendasi Lokasi Baru"):
+                st.session_state.rekomendasi_lokasi = []  # Reset rekomendasi saat pencarian pertama
+                st.session_state.cek_ditekan = True
+                lat_center = df["LATITUDE"].mean()
+                lon_center = df["LONGITUDE"].mean()
+
+                # Fungsi untuk mencari titik acak dalam radius 2 km
+                def titik_acak_dalam_radius(lat, lon, radius_km, n=50):
+                    hasil = []
+                    for _ in range(n * 3):  # Lebih banyak untuk cadangan
+                        dx = random.uniform(-radius_km, radius_km) / 111  # approx degree per km
+                        dy = random.uniform(-radius_km, radius_km) / 111
+                        new_lat = lat + dx
+                        new_lon = lon + dy
+                        if geodesic((lat, lon), (new_lat, new_lon)).km <= radius_km:
+                            hasil.append((new_lat, new_lon))
+                        if len(hasil) >= n:
+                            break
+                    return hasil
+
+                # Fungsi untuk cek apakah titik aman
+                def titik_aman(lat, lon, df, batas_km=1.5):
+                    for _, row in df.iterrows():
+                        if geodesic((lat, lon), (row["LATITUDE"], row["LONGITUDE"])).km < batas_km:
+                            return False
+                    return True
+
+                titik_acak = titik_acak_dalam_radius(lat_center, lon_center, radius_km=2, n=100)
+                titik_rekomendasi = []
+
+                for lat, lon in titik_acak:
+                    if titik_aman(lat, lon, df):
+                        titik_rekomendasi.append((lat, lon))
+                    if len(titik_rekomendasi) >= 10:
                         break
-                return hasil
 
-            titik_acak = titik_acak_dalam_radius(lat_center, lon_center, radius_km=2, n=100)
+                # Simpan hasil pencarian rekomendasi ke session_state
+                st.session_state.rekomendasi_lokasi = titik_rekomendasi
 
-            def titik_aman(lat, lon, df, batas_km=1.5):
-                for _, row in df.iterrows():
-                    if geodesic((lat, lon), (row["LATITUDE"], row["LONGITUDE"])).km < batas_km:
-                        return False
-                return True
+            # Jika sudah ada hasil pencarian, tampilkan rekomendasi
+            if st.session_state.rekomendasi_lokasi is not None:
+                if len(st.session_state.rekomendasi_lokasi) > 0:
+                    st.success(f"✅ Ditemukan {len(st.session_state.rekomendasi_lokasi)} lokasi aman untuk direkomendasikan!")
 
-            titik_rekomendasi = []
-            for lat, lon in titik_acak:
-                if titik_aman(lat, lon, df):
-                    titik_rekomendasi.append((lat, lon))
-                if len(titik_rekomendasi) >= 10:
-                    break
+                    m = folium.Map(location=[lat_center, lon_center], zoom_start=13)
 
-            if titik_rekomendasi:
-                st.success(f"✅ Ditemukan {len(titik_rekomendasi)} lokasi aman untuk direkomendasikan!")
-                m = folium.Map(location=[lat_center, lon_center], zoom_start=13)
+                    # Menambahkan marker untuk mitra
+                    for _, row in df.iterrows():
+                        icon = folium.CustomIcon(icon_url, icon_size=(30, 30))
+                        folium.Marker(
+                            location=[row["LATITUDE"], row["LONGITUDE"]],
+                            popup=row["MITRA"],
+                            icon=icon,
+                            tooltip=row["MITRA"]
+                        ).add_to(m)
 
-                # Menambahkan marker untuk mitra
-                for _, row in df.iterrows():
-                    icon = folium.CustomIcon(icon_url, icon_size=(30, 30))
-                    folium.Marker(
-                        location=[row["LATITUDE"], row["LONGITUDE"]],
-                        popup=row["MITRA"],
-                        icon=icon,
-                        tooltip=row["MITRA"]
-                    ).add_to(m)
+                    # Menambahkan marker untuk lokasi rekomendasi
+                    for i, (lat, lon) in enumerate(st.session_state.rekomendasi_lokasi):
+                        folium.Marker(
+                            location=[lat, lon],
+                            popup=f"Rekomendasi #{i+1}",
+                            tooltip=f"Rekomendasi #{i+1}",
+                            icon=folium.Icon(color="purple", icon="star")
+                        ).add_to(m)
 
-                # Menambahkan marker untuk lokasi rekomendasi
-                for i, (lat, lon) in enumerate(titik_rekomendasi):
-                    folium.Marker(
-                        location=[lat, lon],
-                        popup=f"Rekomendasi #{i+1}",
-                        tooltip=f"Rekomendasi #{i+1}",
-                        icon=folium.Icon(color="purple", icon="star")
-                    ).add_to(m)
+                    st.subheader("📍 Rekomendasi Lokasi Baru")
+                    st_folium(m, width=700, height=500)
 
-                st.subheader("📍 Rekomendasi Lokasi Baru")
-                st_folium(m, width=700, height=500)
-            else:
-                st.warning("⚠️ Lokasi sudah padat, tidak ada rekomendasi yang aman ditemukan.")
-    except Exception as e:
-        st.error(f"❌ Terjadi error saat membaca file: {e}")
+                else:
+                    st.warning("⚠️ Lokasi sudah padat, tidak ada rekomendasi yang aman ditemukan.")
+    
+    else:
+        st.info("🧠 Klik tombol 'Cari Rekomendasi Lokasi Baru' untuk memulai pencarian lokasi baru.")
+    
+    # Tombol untuk melakukan pencarian lagi
+    if st.button("🔄 Cari Lagi"):
+        st.session_state.rekomendasi_lokasi = None  # Reset hasil rekomendasi
+        st.session_state.cek_ditekan = False  # Reset status tombol
+
 else:
     st.info("📄 Silakan upload file Excel terlebih dahulu untuk memulai.")
