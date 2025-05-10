@@ -1,8 +1,10 @@
 streamlit
-openrouteservice
 pandas
-openpyxl
+gspread
+oauth2client
+openrouteservice
 folium
 streamlit-folium
 geopy
 scikit-learn
+numpy
