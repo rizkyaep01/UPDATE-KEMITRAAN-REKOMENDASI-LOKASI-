@@ -1,34 +1,14 @@
-# 🍗 D'FRESTO Tools
+# D'FRESTO Tools Kemitraan
 
-Aplikasi berbasis Streamlit untuk membantu tim D'FRESTO Fried Chicken dalam:
-- Menampilkan lokasi mitra di peta
-- Mengecek jarak antar mitra agar tidak terlalu berdekatan
-- Memberikan rekomendasi lokasi baru berdasarkan persebaran eksisting
-![Tampilan Awal](tampilan%20awal.jpeg)
+Aplikasi interaktif berbasis Streamlit untuk memudahkan analisis lokasi mitra dan perencanaan ekspansi franchise D'FRESTO Fried Chicken.
 
 ---
 
-## 🚀 Fitur Utama
+## 🖼️ Tampilan Awal Aplikasi
 
-### 1. 📌 Lihat Lokasi Mitra
-- Menampilkan semua lokasi mitra dalam bentuk peta interaktif
-- Logo D'FRESTO digunakan sebagai penanda
-
-### 2. 📏 Cek Jarak Antar Mitra
-- Input koordinat calon mitra baru
-- Menggunakan API OpenRouteService untuk menghitung jarak tempuh jalan
-- Sistem memberikan status aman atau terlalu dekat (< 1.5 km)
-
-### 3. 🌟 Rekomendasi Lokasi Baru
-- Menghasilkan titik-titik potensial dalam radius 2 km dari pusat lokasi mitra
-- Menyaring lokasi yang:
-  - Tidak terlalu dekat dengan mitra lain
-  - Berada di jalur umum antar mitra
-- Menampilkan rekomendasi secara visual di peta
+![Tampilan Awal](tampilan-awal.jpeg)
 
 ---
-
-## 🛠️ Cara Menggunakan
 
 ## 📁 Upload Data Mitra
 
@@ -37,7 +17,46 @@ Aplikasi berbasis Streamlit untuk membantu tim D'FRESTO Fried Chicken dalam:
    - `MITRA`
    - `LATITUDE`
    - `LONGITUDE`
-3. Setelah file berhasil diunggah, fitur menu akan otomatis muncul.
+3. Setelah file berhasil diunggah, menu fitur akan muncul secara otomatis.
+
+---
+
+## 🧭 Pilih Menu Fitur
+
+### 📌 Lihat Lokasi Mitra
+
+- Menampilkan lokasi semua mitra dalam peta interaktif.
+- Setiap titik ditandai dengan ikon logo D'FRESTO.
+
+![Lihat Lokasi Mitra](lihat%20lokasi%20mitra.jpeg)
+
+---
+
+### 📏 Cek Jarak Antar Mitra
+
+1. Masukkan koordinat toko baru:
+   - Latitude
+   - Longitude
+2. Masukkan API Key dari OpenRouteService.
+   👉 [Daftar di sini](https://openrouteservice.org/dev/#/signup)
+3. Klik **"🚦 Cek Jarak Mitra"**
+   - Sistem menghitung jarak jalan ke 5 mitra terdekat.
+   - Lokasi dengan jarak < 1.5 km akan diberi label **"Terlalu Dekat"**
+4. Klik **"📍 Lihat Peta Mitra"** untuk melihat peta interaktif.
+
+![Cek Jarak Antar Mitra](cek%20jarak%20antar%20mitra.jpeg)
+
+---
+
+### 🌟 Rekomendasi Lokasi Baru
+
+- Klik tombol **"🔄 Cari Rekomendasi Lokasi Baru"**
+- Sistem akan mencari titik-titik baru yang:
+  - **Aman**: Berjarak > 1.5 km dari mitra mana pun
+  - **Strategis**: Masih dalam jalur sebaran mitra
+- Lokasi-lokasi hasil rekomendasi akan ditampilkan dalam bentuk peta.
+
+![Rekomendasi Lokasi Baru](rekomendasi%20lokasi%20area%20kemitraan.jpeg)
 
 ---
 
