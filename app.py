@@ -163,7 +163,7 @@ if uploaded_file:
 
         # ===== MENU 3: REKOMENDASI LOKASI BARU =====
         elif menu == "🌟 Rekomendasi Lokasi Baru":
-            st.info("🧠 Sistem akan mencari titik acak dalam radius 5 km dari pusat semua mitra dan menyaring yang aman (jarak > 1.5 km).")
+            st.info("🧠 Sistem akan mencari titik acak dalam radius 2 km dari pusat semua mitra dan menyaring yang aman (jarak > 1.5 km).")
 
             lat_center = df["LATITUDE"].mean()
             lon_center = df["LONGITUDE"].mean()
@@ -181,7 +181,7 @@ if uploaded_file:
                         break
                 return hasil
 
-            titik_acak = titik_acak_dalam_radius(lat_center, lon_center, radius_km=5, n=100)
+            titik_acak = titik_acak_dalam_radius(lat_center, lon_center, radius_km=2, n=100)
 
             def titik_aman(lat, lon, df, batas_km=1.5):
                 for _, row in df.iterrows():
