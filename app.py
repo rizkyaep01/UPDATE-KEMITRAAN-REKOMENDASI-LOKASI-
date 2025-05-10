@@ -10,7 +10,31 @@ from geopy.distance import geodesic
 from sklearn.neighbors import LocalOutlierFactor
 import numpy as np
 
-st.set_page_config(page_title="D'FRESTO Tools", layout="centered")
+# Set up page configuration with custom title and logo
+st.set_page_config(page_title="D'FRESTO Tools", layout="centered", page_icon="logo dfresto.png")
+
+# Ubah latar belakang aplikasi menjadi merah
+st.markdown(
+    """
+    <style>
+    .css-1d391kg {
+        background-color: #FF0000; /* Red background */
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Menambahkan logo di bagian judul
+st.markdown(
+    """
+    <h1 style="text-align:center; color:white;"> 
+        <img src="data:image/png;base64,{}" width="50" height="50" /> 
+        D'FRESTO FRIED CHICKEN
+    </h1>
+    """.format(open("logo dfresto.png", "rb").read().encode("base64").decode("utf-8")),
+    unsafe_allow_html=True
+)
+
+# Title and file upload section
 st.title("🍗 D'FRESTO FRIED CHICKEN")
 
 st.subheader("📁 Upload File Data Lokasi Mitra")
