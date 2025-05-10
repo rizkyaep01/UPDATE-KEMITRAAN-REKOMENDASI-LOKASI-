@@ -243,13 +243,7 @@ if uploaded_file:
                 else:
                     st.warning("⚠️ Lokasi sudah padat, tidak ada rekomendasi yang aman ditemukan.")
     
-    else:
-        st.info("🧠 Klik tombol 'Cari Rekomendasi Lokasi Baru' untuk memulai pencarian lokasi baru.")
-    
-    # Tombol untuk melakukan pencarian lagi
-    if st.button("🔄 Cari Lagi"):
-        st.session_state.rekomendasi_lokasi = None  # Reset hasil rekomendasi
-        st.session_state.cek_ditekan = False  # Reset status tombol
-
+    except Exception as e:
+        st.error(f"❌ Terjadi kesalahan: {e}")
 else:
     st.info("📄 Silakan upload file Excel terlebih dahulu untuk memulai.")
