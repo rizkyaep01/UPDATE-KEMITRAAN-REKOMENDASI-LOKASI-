@@ -11,37 +11,21 @@ from sklearn.neighbors import LocalOutlierFactor
 import numpy as np
 import base64
 
-# Set page config with logo
-st.set_page_config(page_title="D'FRESTO Tools", layout="centered", page_icon="logo dfresto.png")
+# ===== Logo Base64 Encoding =====
+with open("logo dfresto.png", "rb") as image_file:
+    logo_base64 = base64.b64encode(image_file.read()).decode()
 
-# Mengubah latar belakang menjadi merah
+# ===== Page Config =====
+st.set_page_config(page_title="D'FRESTO Tools", layout="centered")
+
+# ===== Custom Header with Logo and Red Title =====
 st.markdown(
-    """
-    <style>
-    body {
-        background-color: #FF0000; /* Red background */
-    }
-    .reportview-container {
-        background-color: #FF0000; /* Red background for the container */
-    }
-    .css-18e3th9 {
-        background-color: #FF0000; /* Ensuring specific container area is also red */
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-# Membaca logo dan mengonversi menjadi format base64
-with open("logo dfresto.png", "rb") as logo_file:
-    logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
-
-# Menambahkan logo di bagian judul
-st.markdown(
-    """
-    <h1 style="text-align:center; color:white;"> 
-        <img src="data:image/png;base64,{}" width="50" height="50" /> 
+    f"""
+    <h1 style="text-align:center; color:red;"> 
+        <img src="data:image/png;base64,{logo_base64}" width="50" height="50" /> 
         D'FRESTO FRIED CHICKEN
     </h1>
-    """.format(logo_base64),
+    """,
     unsafe_allow_html=True
 )
 
