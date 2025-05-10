@@ -199,4 +199,5 @@ if uploaded_file:
                         break
 
                 if titik_rekomendasi:
-                    st.success(f"✅ Ditemukan {len(titik_rekomendasi)} lokasi aman untuk direkomendasikan
+                    st.success(f"✅ Ditemukan {len(titik_rekomendasi)} lokasi aman untuk direkomendasikan!")
+                    m = folium.Map(location=[lat_center, lon_center], zoom_start=13)
