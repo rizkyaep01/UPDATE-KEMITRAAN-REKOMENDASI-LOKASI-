@@ -1,7 +1,6 @@
 streamlit
 pandas
-gspread
-oauth2client
+openpyxl
 openrouteservice
 folium
 streamlit-folium
