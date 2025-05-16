@@ -205,49 +205,110 @@ if uploaded_file:
 
         # ===== MENU 3: REKOMENDASI LOKASI BARU =====
         elif menu == "🌟 Rekomendasi Lokasi Baru":
-            with st.spinner("Loading rekomendasi lokasi..."):
-                time.sleep(0.7)
-                st.write("Rekomendasi lokasi baru berdasarkan deteksi outlier (LOF) dan centroid cluster.")
+    st.info("🧠 Sistem mencari titik dalam radius 2 km dari pusat mitra, menyaring yang aman (>1.5 km), dan mengikuti jalur antar mitra.")
 
-                coords = df_regional[["LATITUDE", "LONGITUDE"]].values
+    if 'rekomendasi_lokasi' not in st.session_state:
+        st.session_state.rekomendasi_lokasi = None
+    if 'cek_ditekan' not in st.session_state:
+        st.session_state.cek_ditekan = False
 
-                if len(coords) < 5:
-                    st.warning("Data mitra regional kurang dari 5, rekomendasi lokasi kurang optimal.")
-                else:
-                    lof = LocalOutlierFactor(n_neighbors=5)
-                    y_pred = lof.fit_predict(coords)
-                    outlier_mask = y_pred == -1
+    coords = df[['LATITUDE', 'LONGITUDE']].to_numpy()
 
-                    st.write(f"Jumlah outlier (lokasi aneh): {sum(outlier_mask)}")
+    if len(coords) >= 5:
+        lof = LocalOutlierFactor(n_neighbors=5, contamination=0.05)
+        mask = lof.fit_predict(coords)
+        df_filtered = df[mask == 1].copy()
+    else:
+        df_filtered = df.copy()
 
-                    non_outlier_coords = coords[~outlier_mask]
-                    centroid = non_outlier_coords.mean(axis=0)
-                    st.write(f"Centroid lokasi mitra (non-outlier): {centroid}")
+    lat_center = df_filtered["LATITUDE"].mean()
+    lon_center = df_filtered["LONGITUDE"].mean()
 
-                    # Menampilkan peta rekomendasi
-                    m = folium.Map(location=centroid, zoom_start=14)
+    df_filtered["JARAK"] = df_filtered.apply(lambda row: geodesic((row["LATITUDE"], row["LONGITUDE"]), (lat_center, lon_center)).km, axis=1)
+    df_filtered = df_filtered.sort_values("JARAK").reset_index(drop=True)
 
-                    icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
-                    for i, (lat, lon) in enumerate(coords):
-                        color = "red" if outlier_mask[i] else "blue"
-                        folium.CircleMarker(
-                            location=[lat, lon],
-                            radius=6,
-                            color=color,
-                            fill=True,
-                            fill_color=color,
-                            fill_opacity=0.7,
-                            popup=f"Mitra ke-{i + 1}"
-                        ).add_to(m)
+    if st.button("🔄 Cari Rekomendasi Lokasi Baru"):
+        st.session_state.rekomendasi_lokasi = []
+        st.session_state.cek_ditekan = True
 
-                    folium.Marker(
-                        location=centroid,
-                        popup="Rekomendasi Lokasi Baru",
-                        tooltip="Rekomendasi Lokasi Baru",
-                        icon=folium.Icon(color="green", icon="star")
-                    ).add_to(m)
+        def titik_acak_dalam_radius(lat, lon, radius_km, n=200):
+            hasil = []
+            for _ in range(n * 2):
+                dx = random.uniform(-radius_km, radius_km) / 111
+                dy = random.uniform(-radius_km, radius_km) / (111 * math.cos(math.radians(lat)))
+                new_lat = lat + dx
+                new_lon = lon + dy
+                if geodesic((lat, lon), (new_lat, new_lon)).km <= radius_km:
+                    hasil.append((new_lat, new_lon))
+                if len(hasil) >= n:
+                    break
+            return hasil
 
-                    st_folium(m, width=700, height=500)
+        def titik_aman(lat, lon, df, batas_km=1.5):
+            for _, row in df.iterrows():
+                if geodesic((lat, lon), (row["LATITUDE"], row["LONGITUDE"])).km < batas_km:
+                    return False
+            return True
+
+        def di_jalur(lat, lon, df, ambang_km=0.3):
+            for i in range(len(df) - 1):
+                lat1, lon1 = df.iloc[i]["LATITUDE"], df.iloc[i]["LONGITUDE"]
+                lat2, lon2 = df.iloc[i + 1]["LATITUDE"], df.iloc[i + 1]["LONGITUDE"]
+                d1 = geodesic((lat1, lon1), (lat, lon)).km
+                d2 = geodesic((lat2, lon2), (lat, lon)).km
+                d12 = geodesic((lat1, lon1), (lat2, lon2)).km
+                if abs((d1 + d2) - d12) <= ambang_km:
+                    return True
+            return False
+
+        titik_acak = titik_acak_dalam_radius(lat_center, lon_center, radius_km=2, n=300)
+        titik_rekomendasi = []
+
+        for lat, lon in titik_acak:
+            if titik_aman(lat, lon, df_filtered) and di_jalur(lat, lon, df_filtered):
+                titik_rekomendasi.append((lat, lon))
+            if len(titik_rekomendasi) >= 10:
+                break
+
+        if len(titik_rekomendasi) == 0:
+            for lat, lon in titik_acak:
+                if titik_aman(lat, lon, df_filtered):
+                    titik_rekomendasi.append((lat, lon))
+                if len(titik_rekomendasi) >= 10:
+                    break
+
+        st.session_state.rekomendasi_lokasi = titik_rekomendasi
+
+    if st.session_state.rekomendasi_lokasi is not None:
+        if len(st.session_state.rekomendasi_lokasi) > 0:
+            st.success(f"✅ Ditemukan {len(st.session_state.rekomendasi_lokasi)} lokasi aman untuk direkomendasikan!")
+
+            m = folium.Map(location=[lat_center, lon_center], zoom_start=13)
+
+            for _, row in df_filtered.iterrows():
+                icon = folium.CustomIcon(icon_url, icon_size=(30, 30))
+                folium.Marker(
+                    location=[row["LATITUDE"], row["LONGITUDE"]],
+                    popup=row.get("MITRA", ""),
+                    icon=icon,
+                    tooltip=row.get("MITRA", "")
+                ).add_to(m)
+
+            for i, (lat, lon) in enumerate(st.session_state.rekomendasi_lokasi):
+                folium.Marker(
+                    location=[lat, lon],
+                    popup=f"Rekomendasi #{i + 1}",
+                    tooltip=f"Rekomendasi #{i + 1}",
+                    icon=folium.Icon(color="purple", icon="star")
+                ).add_to(m)
+
+            st.subheader("📍 Rekomendasi Lokasi Baru")
+            st_folium(m, width=700, height=500)
+
+        else:
+            st.warning("⚠️ Lokasi sudah padat, tidak ada rekomendasi yang aman ditemukan.")
+
+
 
     except Exception as e:
         st.error(f"❌ Terjadi kesalahan: {e}")
