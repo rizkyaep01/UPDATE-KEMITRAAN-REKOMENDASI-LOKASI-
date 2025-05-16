@@ -6,11 +6,7 @@ import folium
 from streamlit_folium import st_folium
 from time import sleep
 import random
-from geopy.distance import geodesic
-from sklearn.neighbors import LocalOutlierFactor
-import numpy as np
 import base64
-import time  # tambahan import time untuk sleep
 
 # ===== Logo Base64 Encoding =====
 with open("logo dfresto.png", "rb") as image_file:
@@ -75,11 +71,157 @@ if uploaded_file:
 
         # ===== MENU 1: LIHAT LOKASI MITRA =====
         if menu == "📌 Lihat Lokasi Mitra":
-            with st.spinner("Loading lokasi mitra..."):
-                time.sleep(0.7)
-                mean_lat = df_regional["LATITUDE"].mean()
-                mean_lon = df_regional["LONGITUDE"].mean()
-                m = folium.Map(location=[mean_lat, mean_lon], zoom_start=14)
+            with st.spinner("Loading peta lokasi mitra..."):
+                sleep(0.7)
+
+            mean_lat = df_regional["LATITUDE"].mean()
+            mean_lon = df_regional["LONGITUDE"].mean()
+            m = folium.Map(location=[mean_lat, mean_lon], zoom_start=14)
+
+            for _, row in df_regional.iterrows():
+                icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
+                folium.Marker(
+                    location=[row["LATITUDE"], row["LONGITUDE"]],
+                    popup=row["MITRA"],
+                    tooltip=row["MITRA"],
+                    icon=icon
+                ).add_to(m)
+
+            st.subheader("🗺️ Peta Lokasi Mitra")
+            st_folium(m, width=700, height=500)
+
+        # ===== MENU 2: CEK JARAK ANTAR MITRA =====
+        elif menu == "📏 Cek Jarak Antar Mitra":
+            with st.spinner("Loading cek jarak..."):
+                sleep(0.7)
+
+            lat_baru = st.number_input("🧭 Latitude mitra baru", value=-6.181080, format="%.6f")
+            lon_baru = st.number_input("🧭 Longitude mitra baru", value=106.668730, format="%.6f")
+            api_key = st.text_input("🔑 Masukkan API Key OpenRouteService kamu", type="password")
+
+            if "cek_ditekan" not in st.session_state:
+                st.session_state.cek_ditekan = False
+            if "lihat_peta" not in st.session_state:
+                st.session_state.lihat_peta = False
+
+            df_jarak = df_regional.copy()
+            df_jarak.columns = df_jarak.columns.str.strip()
+            df_jarak['Latitude'] = df_jarak['LATITUDE']
+            df_jarak['Longitude'] = df_jarak['LONGITUDE']
+
+            if api_key:
+                try:
+                    client = openrouteservice.Client(key=api_key)
+                except:
+                    st.error("❌ API Key tidak valid atau koneksi gagal.")
+                    st.stop()
+
+                def hitung_jarak_jalan(lon1, lat1, lon2, lat2, max_retry=3):
+                    for attempt in range(max_retry):
+                        try:
+                            coords = ((lon1, lat1), (lon2, lat2))
+                            route = client.directions(coords)
+                            jarak_m = route['routes'][0]['summary']['distance']
+                            return jarak_m / 1000
+                        except (ApiError, HTTPError):
+                            sleep(0.5 + random.random())
+                        except Exception:
+                            return None
+                    return None
+
+                if st.button("🚦 Cek Jarak Mitra"):
+                    st.session_state.cek_ditekan = True
+                    st.session_state.lihat_peta = False
+                    jarak_minimal = 1.5
+                    aman = True
+
+                    df_jarak['JARAK_AWAL'] = ((df_jarak['Latitude'] - lat_baru) ** 2 + (df_jarak['Longitude'] - lon_baru) ** 2) ** 0.5
+                    df_terdekat = df_jarak.nsmallest(5, 'JARAK_AWAL').copy()
+
+                    hasil_cek = []
+                    progress = st.progress(0)
+                    for i, (_, row) in enumerate(df_terdekat.iterrows()):
+                        jarak = hitung_jarak_jalan(row['Longitude'], row['Latitude'], lon_baru, lat_baru)
+                        progress.progress((i + 1) / len(df_terdekat))
+
+                        if jarak is not None:
+                            status = "aman"
+                            if jarak < jarak_minimal:
+                                status = "terlalu dekat"
+                                aman = False
+                            hasil_cek.append({
+                                'MITRA': row['MITRA'],
+                                'Latitude': row['Latitude'],
+                                'Longitude': row['Longitude'],
+                                'Jarak': jarak,
+                                'Status': status
+                            })
+                        else:
+                            st.error(f"❌ Gagal menghitung jarak ke mitra {row['MITRA']}")
+
+                    progress.empty()
+                    st.session_state.hasil_cek = hasil_cek
+
+                if st.session_state.cek_ditekan and "hasil_cek" in st.session_state:
+                    hasil = st.session_state.hasil_cek
+                    aman = all(h['Status'] == "aman" for h in hasil)
+                    st.subheader("🔍 Hasil Pengecekan:")
+
+                    for h in hasil:
+                        if h['Status'] == "terlalu dekat":
+                            st.warning(f"⚠️ TERLALU DEKAT: {h['MITRA']} | Jarak Jalan = {h['Jarak']:.2f} km")
+
+                    if aman:
+                        st.success("✅ Toko baru AMAN — tidak ada toko lain dalam radius 1.5 km (jalan).")
+
+                    if st.button("📍 Lihat Peta Mitra"):
+                        st.session_state.lihat_peta = True
+
+                if st.session_state.lihat_peta and "hasil_cek" in st.session_state:
+                    st.subheader("🗺️ Peta Mitra Terlalu Dekat Dengan Mitra Baru")
+                    m = folium.Map(location=[lat_baru, lon_baru], zoom_start=14)
+
+                    folium.Marker(
+                        location=[lat_baru, lon_baru],
+                        popup="Toko Baru",
+                        tooltip="Toko Baru",
+                        icon=folium.Icon(color="green", icon="plus-sign"),
+                    ).add_to(m)
+
+                    for row in st.session_state.hasil_cek:
+                        if row['Status'] == "terlalu dekat":
+                            popup = f"{row['MITRA']} ({row['Jarak']:.2f} km)"
+                            icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
+                            folium.Marker(
+                                location=[row['Latitude'], row['Longitude']],
+                                popup=popup,
+                                tooltip=row['MITRA'],
+                                icon=icon
+                            ).add_to(m)
+
+                    st_folium(m, width=700, height=500)
+
+            else:
+                st.info("Masukkan API Key terlebih dahulu untuk cek jarak jalan.")
+
+        # ===== MENU 3: REKOMENDASI LOKASI BARU =====
+        elif menu == "🌟 Rekomendasi Lokasi Baru":
+            with st.spinner("Loading rekomendasi lokasi..."):
+                sleep(0.7)
+
+            st.write("Rekomendasi lokasi baru berdasarkan centroid mitra di regional yang dipilih.")
+
+            coords = df_regional[["LATITUDE", "LONGITUDE"]].values
+
+            if len(coords) == 0:
+                st.warning("Data mitra regional kosong, tidak dapat merekomendasikan lokasi.")
+            else:
+                centroid_lat = coords[:, 0].mean()
+                centroid_lon = coords[:, 1].mean()
+
+                st.write(f"📍 Lokasi rekomendasi (centroid): Latitude = {centroid_lat:.6f}, Longitude = {centroid_lon:.6f}")
+
+                m = folium.Map(location=[centroid_lat, centroid_lon], zoom_start=14)
 
                 for _, row in df_regional.iterrows():
                     icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
@@ -90,164 +232,17 @@ if uploaded_file:
                         icon=icon
                     ).add_to(m)
 
-                st.subheader("🗺️ Peta Lokasi Mitra")
-                st_folium(m, width=700, height=500)
-
-        # ===== MENU 2: CEK JARAK ANTAR MITRA =====
-        elif menu == "📏 Cek Jarak Antar Mitra":
-            with st.spinner("Loading cek jarak..."):
-                time.sleep(0.7)
-                lat_baru = st.number_input("🧭 Latitude mitra baru", value=-6.181080, format="%.6f")
-                lon_baru = st.number_input("🧭 Longitude mitra baru", value=106.668730, format="%.6f")
-                api_key = st.text_input("🔑 Masukkan API Key OpenRouteService kamu", type="password")
-
-                if "cek_ditekan" not in st.session_state:
-                    st.session_state.cek_ditekan = False
-                if "lihat_peta" not in st.session_state:
-                    st.session_state.lihat_peta = False
-
-                df_jarak = df_regional.copy()
-                df_jarak.columns = df_jarak.columns.str.strip()
-                df_jarak['Latitude'] = df_jarak['LATITUDE']
-                df_jarak['Longitude'] = df_jarak['LONGITUDE']
-
-                if api_key:
-                    try:
-                        client = openrouteservice.Client(key=api_key)
-                    except:
-                        st.error("❌ API Key tidak valid atau koneksi gagal.")
-                        st.stop()
-
-                    def hitung_jarak_jalan(lon1, lat1, lon2, lat2, max_retry=3):
-                        for attempt in range(max_retry):
-                            try:
-                                coords = ((lon1, lat1), (lon2, lat2))
-                                route = client.directions(coords)
-                                jarak_m = route['routes'][0]['summary']['distance']
-                                return jarak_m / 1000
-                            except (ApiError, HTTPError):
-                                sleep(0.5 + random.random())
-                            except Exception:
-                                return None
-                        return None
-
-                    if st.button("🚦 Cek Jarak Mitra"):
-                        st.session_state.cek_ditekan = True
-                        st.session_state.lihat_peta = False
-                        jarak_minimal = 1.5
-                        aman = True
-
-                        df_jarak['JARAK_AWAL'] = ((df_jarak['Latitude'] - lat_baru) ** 2 + (df_jarak['Longitude'] - lon_baru) ** 2) ** 0.5
-                        df_terdekat = df_jarak.nsmallest(5, 'JARAK_AWAL').copy()
-
-                        hasil_cek = []
-                        progress = st.progress(0)
-                        for i, (_, row) in enumerate(df_terdekat.iterrows()):
-                            jarak = hitung_jarak_jalan(row['Longitude'], row['Latitude'], lon_baru, lat_baru)
-                            progress.progress((i + 1) / len(df_terdekat))
-
-                            if jarak is not None:
-                                status = "aman"
-                                if jarak < jarak_minimal:
-                                    status = "terlalu dekat"
-                                    aman = False
-                                hasil_cek.append({
-                                    'MITRA': row['MITRA'],
-                                    'Latitude': row['Latitude'],
-                                    'Longitude': row['Longitude'],
-                                    'Jarak': jarak,
-                                    'Status': status
-                                })
-                            else:
-                                st.error(f"❌ Gagal menghitung jarak ke mitra {row['MITRA']}")
-
-                        progress.empty()
-                        st.session_state.hasil_cek = hasil_cek
-
-                    if st.session_state.cek_ditekan and "hasil_cek" in st.session_state:
-                        hasil = st.session_state.hasil_cek
-                        aman = all(h['Status'] == "aman" for h in hasil)
-                        st.subheader("🔍 Hasil Pengecekan:")
-
-                        for h in hasil:
-                            if h['Status'] == "terlalu dekat":
-                                st.warning(f"⚠️ TERLALU DEKAT: {h['MITRA']} | Jarak Jalan = {h['Jarak']:.2f} km")
-
-                        if aman:
-                            st.success("✅ Toko baru AMAN — tidak ada toko lain dalam radius 1.5 km (jalan).")
-
-                        if st.button("📍 Lihat Peta Mitra"):
-                            st.session_state.lihat_peta = True
-
-                    if st.session_state.lihat_peta and "hasil_cek" in st.session_state:
-                        st.subheader("🗺️ Peta Mitra Terlalu Dekat Dengan Mitra Baru")
-                        m = folium.Map(location=[lat_baru, lon_baru], zoom_start=14)
-
-                        folium.Marker(
-                            location=[lat_baru, lon_baru],
-                            popup="Toko Baru",
-                            tooltip="Toko Baru",
-                            icon=folium.Icon(color="green", icon="plus-sign"),
-                        ).add_to(m)
-
-                        for row in st.session_state.hasil_cek:
-                            if row['Status'] == "terlalu dekat":
-                                popup = f"{row['MITRA']} ({row['Jarak']:.2f} km)"
-                                icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
-                                folium.Marker(
-                                    location=[row['Latitude'], row['Longitude']],
-                                    popup=popup,
-                                    tooltip=row['MITRA'],
-                                    icon=icon
-                                ).add_to(m)
-
-                        st_folium(m, width=700, height=500)
-
-        # ===== MENU 3: REKOMENDASI LOKASI BARU =====
-        elif menu == "🌟 Rekomendasi Lokasi Baru":
-    with st.spinner("Loading rekomendasi lokasi..."):
-        time.sleep(0.7)
-
-        st.write("Rekomendasi lokasi baru berdasarkan centroid dari mitra yang ada di regional terpilih.")
-
-        # Ambil koordinat regional yang sudah dipilih
-        coords = df_regional[["LATITUDE", "LONGITUDE"]].values
-
-        if len(coords) == 0:
-            st.warning("Data mitra regional kosong, tidak bisa merekomendasikan lokasi.")
-        else:
-            # Hitung centroid (rata-rata lat & lon)
-            centroid_lat = coords[:, 0].mean()
-            centroid_lon = coords[:, 1].mean()
-
-            st.write(f"📍 Lokasi rekomendasi baru (centroid): Latitude = {centroid_lat:.6f}, Longitude = {centroid_lon:.6f}")
-
-            # Buat peta
-            m = folium.Map(location=[centroid_lat, centroid_lon], zoom_start=14)
-
-            icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
-
-            # Tampilkan semua mitra di regional dengan icon
-            for _, row in df_regional.iterrows():
                 folium.Marker(
-                    location=[row["LATITUDE"], row["LONGITUDE"]],
-                    popup=row["MITRA"],
-                    tooltip=row["MITRA"],
-                    icon=icon
+                    location=[centroid_lat, centroid_lon],
+                    popup="Rekomendasi Lokasi Baru",
+                    tooltip="Rekomendasi Lokasi Baru",
+                    icon=folium.Icon(color="green", icon="star")
                 ).add_to(m)
 
-            # Tampilkan titik rekomendasi centroid dengan icon berbeda
-            folium.Marker(
-                location=[centroid_lat, centroid_lon],
-                popup="Rekomendasi Lokasi Baru",
-                tooltip="Rekomendasi Lokasi Baru",
-                icon=folium.Icon(color="green", icon="star")
-            ).add_to(m)
-
-            st_folium(m, width=700, height=500)
+                st_folium(m, width=700, height=500)
 
     except Exception as e:
-        st.error(f"❌ Terjadi kesalahan: {e}")
+        st.error(f"Terjadi kesalahan: {e}")
 
 else:
-    st.info("📂 Silakan upload file Excel untuk memulai.")
+    st.info("Silakan upload file data mitra terlebih dahulu.")
