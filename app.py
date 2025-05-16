@@ -30,7 +30,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.subheader("\ud83d\udcc1 Upload File Data Lokasi Mitra")
+st.subheader("📁 Upload File Data Lokasi Mitra")
 uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
 
 if uploaded_file:
@@ -38,36 +38,42 @@ if uploaded_file:
         df = pd.read_excel(uploaded_file)
         df.columns = df.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
 
+        # Kolom wajib
         required_cols = ["MITRA", "LATITUDE", "LONGITUDE", "REGIONAL"]
         if not all(col in df.columns for col in required_cols):
-            st.error(f"\u274c Kolom wajib {required_cols} tidak ditemukan.")
+            st.error(f"❌ Kolom wajib {required_cols} tidak ditemukan.")
             st.stop()
 
+        # Format koordinat
         df["REGIONAL"] = df["REGIONAL"].astype(str).str.lower().str.strip()
         df["LATITUDE"] = df["LATITUDE"].astype(str).str.replace(",", ".").astype(float)
         df["LONGITUDE"] = df["LONGITUDE"].astype(str).str.replace(",", ".").astype(float)
 
-        st.success("\u2705 File berhasil dibaca!")
+        st.success("✅ File berhasil dibaca!")
 
+        # Pilih regional
         daftar_regional = sorted(df["REGIONAL"].dropna().unique())
-        regional_pilih = st.selectbox("\ud83c\udf0d Pilih Regional yang ingin dipakai:", ["-- Pilih Regional --"] + daftar_regional)
+        regional_pilih = st.selectbox("🌍 Pilih Regional:", ["-- Pilih Regional --"] + daftar_regional)
 
         if regional_pilih == "-- Pilih Regional --":
-            st.info("\u26a0\ufe0f Silakan pilih regional terlebih dahulu untuk memproses data.")
+            st.info("⚠️ Silakan pilih regional terlebih dahulu.")
             st.stop()
 
+        # Filter data
         df_regional = df[df["REGIONAL"] == regional_pilih].reset_index(drop=True)
         st.write(f"Jumlah mitra di regional **{regional_pilih}**: {len(df_regional)}")
 
+        # ===== MENU =====
         menu = st.radio("Pilih Menu:", [
-            "\ud83d\udccc Lihat Lokasi Mitra",
-            "\ud83d\udccf Cek Jarak Antar Mitra",
-            "\ud83c\udf1f Rekomendasi Lokasi Baru"
+            "📌 Lihat Lokasi Mitra",
+            "📏 Cek Jarak Antar Mitra",
+            "🌟 Rekomendasi Lokasi Baru"
         ])
 
         icon_url = "logo dfresto.png"
 
-        if menu == "\ud83d\udccc Lihat Lokasi Mitra":
+        # ===== MENU 1: Lihat Lokasi Mitra =====
+        if menu == "📌 Lihat Lokasi Mitra":
             with st.spinner("Loading lokasi mitra..."):
                 time.sleep(0.7)
                 mean_lat = df_regional["LATITUDE"].mean()
@@ -83,15 +89,16 @@ if uploaded_file:
                         icon=icon
                     ).add_to(m)
 
-                st.subheader("\ud83d\uddfc\ufe0f Peta Lokasi Mitra")
+                st.subheader("🗺️ Peta Lokasi Mitra")
                 st_folium(m, width=700, height=500)
 
-        elif menu == "\ud83d\udccf Cek Jarak Antar Mitra":
+        # ===== MENU 2: Cek Jarak Antar Mitra =====
+        elif menu == "📏 Cek Jarak Antar Mitra":
             with st.spinner("Loading cek jarak..."):
                 time.sleep(0.7)
-                lat_baru = st.number_input("\ud83e\uddfd Latitude mitra baru", value=-6.181080, format="%.6f")
-                lon_baru = st.number_input("\ud83e\uddfd Longitude mitra baru", value=106.668730, format="%.6f")
-                api_key = st.text_input("\ud83d\udd11 Masukkan API Key OpenRouteService kamu", type="password")
+                lat_baru = st.number_input("🧭 Latitude mitra baru", value=-6.181080, format="%.6f")
+                lon_baru = st.number_input("🧭 Longitude mitra baru", value=106.668730, format="%.6f")
+                api_key = st.text_input("🔑 Masukkan API Key OpenRouteService kamu", type="password")
 
                 if "cek_ditekan" not in st.session_state:
                     st.session_state.cek_ditekan = False
@@ -107,7 +114,7 @@ if uploaded_file:
                     try:
                         client = openrouteservice.Client(key=api_key)
                     except:
-                        st.error("\u274c API Key tidak valid atau koneksi gagal.")
+                        st.error("❌ API Key tidak valid atau koneksi gagal.")
                         st.stop()
 
                     def hitung_jarak_jalan(lon1, lat1, lon2, lat2, max_retry=3):
@@ -123,7 +130,7 @@ if uploaded_file:
                                 return None
                         return None
 
-                    if st.button("\ud83d\udea6 Cek Jarak Mitra"):
+                    if st.button("🚦 Cek Jarak Mitra"):
                         st.session_state.cek_ditekan = True
                         st.session_state.lihat_peta = False
                         jarak_minimal = 1.5
@@ -151,7 +158,7 @@ if uploaded_file:
                                     'Status': status
                                 })
                             else:
-                                st.error(f"\u274c Gagal menghitung jarak ke mitra {row['MITRA']}")
+                                st.error(f"❌ Gagal menghitung jarak ke mitra {row['MITRA']}")
 
                         progress.empty()
                         st.session_state.hasil_cek = hasil_cek
@@ -159,20 +166,20 @@ if uploaded_file:
                     if st.session_state.cek_ditekan and "hasil_cek" in st.session_state:
                         hasil = st.session_state.hasil_cek
                         aman = all(h['Status'] == "aman" for h in hasil)
-                        st.subheader("\ud83d\udd0d Hasil Pengecekan:")
+                        st.subheader("🔍 Hasil Pengecekan:")
 
                         for h in hasil:
                             if h['Status'] == "terlalu dekat":
-                                st.warning(f"\u26a0\ufe0f TERLALU DEKAT: {h['MITRA']} | Jarak Jalan = {h['Jarak']:.2f} km")
+                                st.warning(f"⚠️ TERLALU DEKAT: {h['MITRA']} | Jarak Jalan = {h['Jarak']:.2f} km")
 
                         if aman:
-                            st.success("\u2705 Toko baru AMAN \u2014 tidak ada toko lain dalam radius 1.5 km (jalan).")
+                            st.success("✅ Toko baru AMAN — tidak ada toko lain dalam radius 1.5 km (jalan).")
 
-                        if st.button("\ud83d\udccd Lihat Peta Mitra"):
+                        if st.button("📍 Lihat Peta Mitra"):
                             st.session_state.lihat_peta = True
 
                     if st.session_state.lihat_peta and "hasil_cek" in st.session_state:
-                        st.subheader("\ud83d\uddfc\ufe0f Peta Mitra Terlalu Dekat Dengan Mitra Baru")
+                        st.subheader("🗺️ Peta Mitra Terlalu Dekat Dengan Mitra Baru")
                         m = folium.Map(location=[lat_baru, lon_baru], zoom_start=14)
 
                         folium.Marker(
@@ -195,7 +202,8 @@ if uploaded_file:
 
                         st_folium(m, width=700, height=500)
 
-        elif menu == "\ud83c\udf1f Rekomendasi Lokasi Baru":
+        # ===== MENU 3: Rekomendasi Lokasi Baru =====
+        elif menu == "🌟 Rekomendasi Lokasi Baru":
             with st.spinner("Loading rekomendasi lokasi..."):
                 time.sleep(0.7)
                 st.write("Rekomendasi lokasi baru berdasarkan deteksi outlier (LOF) dan centroid cluster.")
@@ -240,7 +248,6 @@ if uploaded_file:
                     st_folium(m, width=700, height=500)
 
     except Exception as e:
-        st.error(f"\u274c Terjadi kesalahan: {e}")
-
+        st.error(f"❌ Terjadi kesalahan: {e}")
 else:
-    st.info("\ud83d\udcc2 Silakan upload file Excel untuk memulai.")
+    st.info("📂 Silakan upload file Excel untuk memulai.")
