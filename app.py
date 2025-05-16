@@ -205,49 +205,46 @@ if uploaded_file:
 
         # ===== MENU 3: REKOMENDASI LOKASI BARU =====
         elif menu == "🌟 Rekomendasi Lokasi Baru":
-            with st.spinner("Loading rekomendasi lokasi..."):
-                time.sleep(0.7)
-                st.write("Rekomendasi lokasi baru berdasarkan deteksi outlier (LOF) dan centroid cluster.")
+    with st.spinner("Loading rekomendasi lokasi..."):
+        time.sleep(0.7)
 
-                coords = df_regional[["LATITUDE", "LONGITUDE"]].values
+        st.write("Rekomendasi lokasi baru berdasarkan centroid dari mitra yang ada di regional terpilih.")
 
-                if len(coords) < 5:
-                    st.warning("Data mitra regional kurang dari 5, rekomendasi lokasi kurang optimal.")
-                else:
-                    lof = LocalOutlierFactor(n_neighbors=5)
-                    y_pred = lof.fit_predict(coords)
-                    outlier_mask = y_pred == -1
+        # Ambil koordinat regional yang sudah dipilih
+        coords = df_regional[["LATITUDE", "LONGITUDE"]].values
 
-                    st.write(f"Jumlah outlier (lokasi aneh): {sum(outlier_mask)}")
+        if len(coords) == 0:
+            st.warning("Data mitra regional kosong, tidak bisa merekomendasikan lokasi.")
+        else:
+            # Hitung centroid (rata-rata lat & lon)
+            centroid_lat = coords[:, 0].mean()
+            centroid_lon = coords[:, 1].mean()
 
-                    non_outlier_coords = coords[~outlier_mask]
-                    centroid = non_outlier_coords.mean(axis=0)
-                    st.write(f"Centroid lokasi mitra (non-outlier): {centroid}")
+            st.write(f"📍 Lokasi rekomendasi baru (centroid): Latitude = {centroid_lat:.6f}, Longitude = {centroid_lon:.6f}")
 
-                    # Menampilkan peta rekomendasi
-                    m = folium.Map(location=centroid, zoom_start=14)
+            # Buat peta
+            m = folium.Map(location=[centroid_lat, centroid_lon], zoom_start=14)
 
-                    icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
-                    for i, (lat, lon) in enumerate(coords):
-                        color = "red" if outlier_mask[i] else "blue"
-                        folium.CircleMarker(
-                            location=[lat, lon],
-                            radius=6,
-                            color=color,
-                            fill=True,
-                            fill_color=color,
-                            fill_opacity=0.7,
-                            popup=f"Mitra ke-{i + 1}"
-                        ).add_to(m)
+            icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
 
-                    folium.Marker(
-                        location=centroid,
-                        popup="Rekomendasi Lokasi Baru",
-                        tooltip="Rekomendasi Lokasi Baru",
-                        icon=folium.Icon(color="green", icon="star")
-                    ).add_to(m)
+            # Tampilkan semua mitra di regional dengan icon
+            for _, row in df_regional.iterrows():
+                folium.Marker(
+                    location=[row["LATITUDE"], row["LONGITUDE"]],
+                    popup=row["MITRA"],
+                    tooltip=row["MITRA"],
+                    icon=icon
+                ).add_to(m)
 
-                    st_folium(m, width=700, height=500)
+            # Tampilkan titik rekomendasi centroid dengan icon berbeda
+            folium.Marker(
+                location=[centroid_lat, centroid_lon],
+                popup="Rekomendasi Lokasi Baru",
+                tooltip="Rekomendasi Lokasi Baru",
+                icon=folium.Icon(color="green", icon="star")
+            ).add_to(m)
+
+            st_folium(m, width=700, height=500)
 
     except Exception as e:
         st.error(f"❌ Terjadi kesalahan: {e}")
