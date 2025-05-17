@@ -196,7 +196,7 @@ if uploaded_file:
 
                     if aman:
                         # Jika aman, tampilkan semua mitra di regional + mitra terdekat dengan rute
-                        df_regional = df[df['REGIONAL'] == regional_baru].copy()
+                        df_regional = df[df['REGIONAL'] == regional_pilih].copy()
                         for _, row in df_regional.iterrows():
                             popup = f"{row['MITRA']} (Regional)"
                             icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
