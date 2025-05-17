@@ -194,7 +194,7 @@ if uploaded_file:
                         if row['Status'] == "terlalu dekat":
                             popup = f"{row['MITRA']} ({row['Jarak']:.2f} km)"
                             # Pastikan icon_url sudah didefinisikan sebelumnya, kalau belum pakai icon default
-                            icon = folium.Icon(color="red", icon="info-sign")
+                            icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
 
                             folium.Marker(
                                 location=[row['Latitude'], row['Longitude']],
