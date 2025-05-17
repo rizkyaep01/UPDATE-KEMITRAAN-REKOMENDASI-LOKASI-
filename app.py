@@ -182,6 +182,7 @@ if uploaded_file:
                     st.subheader("🗺️ Peta Mitra Terlalu Dekat Dengan Mitra Baru")
                     m = folium.Map(location=[lat_baru, lon_baru], zoom_start=14)
 
+                    # Marker toko baru
                     folium.Marker(
                         location=[lat_baru, lon_baru],
                         popup="Toko Baru",
@@ -192,21 +193,32 @@ if uploaded_file:
                     for row in st.session_state.hasil_cek:
                         if row['Status'] == "terlalu dekat":
                             popup = f"{row['MITRA']} ({row['Jarak']:.2f} km)"
-                            icon = folium.CustomIcon(icon_url, icon_size=(35, 35))
+                            # Pastikan icon_url sudah didefinisikan sebelumnya, kalau belum pakai icon default
+                            icon = folium.Icon(color="red", icon="info-sign")
+
                             folium.Marker(
                                 location=[row['Latitude'], row['Longitude']],
                                 popup=popup,
                                 tooltip=row['MITRA'],
                                 icon=icon
                             ).add_to(m)
-                            if row['Geometry']:
-                                folium.PolyLine(
-                                    locations=[[coord[1], coord[0]] for coord in row['Geometry']],
-                                    color='red',
-                                    weight=4,
-                                    opacity=0.8,
-                                    tooltip=f"Jalur ke {row['MITRA']}"
-                                ).add_to(m)
+
+                            geometry = row.get('Geometry')
+                            if geometry and isinstance(geometry, list):
+                                try:
+                                    # Pastikan geometry berupa list koordinat [lon, lat]
+                                    coords = [[coord[1], coord[0]] for coord in geometry]
+                                    folium.PolyLine(
+                                        coords,
+                                        color='red',
+                                        weight=4,
+                                        opacity=0.8,
+                                        tooltip=f"Jalur ke {row['MITRA']}"
+                                    ).add_to(m)
+                                except Exception as e:
+                                    st.warning(f"⚠️ Gagal gambar rute untuk {row['MITRA']}: {e}")
+                            else:
+                                st.info(f"ℹ️ Tidak ada data jalur rute untuk {row['MITRA']}")
 
                     st_folium(m, width=700, height=500)
 
