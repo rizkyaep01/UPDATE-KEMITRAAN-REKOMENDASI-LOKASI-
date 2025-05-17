@@ -210,16 +210,6 @@ if uploaded_file:
 
                         # Tampilkan juga 5 mitra terdekat dengan rute
                         for row in hasil:
-                            popup = f"{row['MITRA']} ({row['Jarak']:.2f} km)"
-                            icon = folium.Icon(color="orange", icon="flag")
-
-                            folium.Marker(
-                                location=[row['Latitude'], row['Longitude']],
-                                popup=popup,
-                                tooltip=row['MITRA'],
-                                icon=icon
-                            ).add_to(m)
-
                             geometry = row.get('Geometry')
                             if geometry and isinstance(geometry, list):
                                 try:
