@@ -231,6 +231,13 @@ if uploaded_file:
             if 'cek_ditekan' not in st.session_state:
                 st.session_state.cek_ditekan = False
 
+            # Filter sesuai regional yang dipilih
+            regional = st.session_state.get("regional_terpilih", None)
+            if regional is None:
+                st.warning("⚠️ Silakan pilih regional terlebih dahulu di menu awal.")
+                st.stop()
+
+            df = df[df['REGIONAL'] == regional]
             coords = df[['LATITUDE', 'LONGITUDE']].to_numpy()
             if len(df) >= 10:
                 lof = LocalOutlierFactor(n_neighbors=8, contamination=0.05)
