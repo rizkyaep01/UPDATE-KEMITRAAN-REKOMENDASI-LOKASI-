@@ -134,7 +134,14 @@ if uploaded_file:
                     hasil_cek = []
                     progress = st.progress(0)
                     for i, (_, row) in enumerate(df_terdekat.iterrows()):
-                        jarak = hitung_jarak_jalan(row['Longitude'], row['Latitude'], lon_baru, lat_baru)
+                        try:
+                            coords = ((row['Longitude'], row['Latitude']), (lon_baru, lat_baru))
+                            route = client.directions(coords, format='geojson')
+                            jarak = route['features'][0]['properties']['summary']['distance'] / 1000  # km
+                            geometry = route['features'][0]['geometry']['coordinates']  # polyline
+                        except Exception as e:
+                            jarak = None
+                            geometry = None
                         progress.progress((i + 1) / len(df_terdekat))
 
                         if jarak is not None:
@@ -147,7 +154,8 @@ if uploaded_file:
                                 'Latitude': row['Latitude'],
                                 'Longitude': row['Longitude'],
                                 'Jarak': jarak,
-                                'Status': status
+                                'Status': status,
+                                'Geometry': geometry
                             })
                         else:
                             st.error(f"❌ Gagal menghitung jarak ke mitra {row['MITRA']}")
@@ -191,6 +199,14 @@ if uploaded_file:
                                 tooltip=row['MITRA'],
                                 icon=icon
                             ).add_to(m)
+                            if row['Geometry']:
+                                folium.PolyLine(
+                                    locations=[[coord[1], coord[0]] for coord in row['Geometry']],
+                                    color='red',
+                                    weight=4,
+                                    opacity=0.8,
+                                    tooltip=f"Jalur ke {row['MITRA']}"
+                                ).add_to(m)
 
                     st_folium(m, width=700, height=500)
 
