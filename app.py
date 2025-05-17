@@ -187,7 +187,7 @@ if uploaded_file:
                         location=[lat_baru, lon_baru],
                         popup="Toko Baru",
                         tooltip="Toko Baru",
-                        icon=folium.Icon(color="green", icon="plus-sign"),
+                        icon = folium.CustomIcon(icon_url, icon_size=(35, 35)),
                     ).add_to(m)
 
                     for row in st.session_state.hasil_cek:
