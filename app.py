@@ -186,14 +186,6 @@ if uploaded_file:
 
                     m = folium.Map(location=[lat_baru, lon_baru], zoom_start=14)
 
-                    # Marker toko baru
-                    folium.Marker(
-                        location=[lat_baru, lon_baru],
-                        popup="Toko Baru",
-                        tooltip="Toko Baru",
-                        icon=folium.Icon(color="green", icon="plus-sign"),
-                    ).add_to(m)
-
                     if aman:
                         # Jika aman, tampilkan semua mitra di regional + mitra terdekat dengan rute
                         df_regional = df[df['REGIONAL'] == regional_baru].copy()
