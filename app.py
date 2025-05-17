@@ -232,9 +232,12 @@ if uploaded_file:
                 st.session_state.cek_ditekan = False
 
             coords = df[['LATITUDE', 'LONGITUDE']].to_numpy()
-            lof = LocalOutlierFactor(n_neighbors=8, contamination=0.05)
-            outliers = lof.fit_predict(coords)
-            df_filtered = df[outliers == 1]  # 1 = inlier, -1 = outlier
+            if len(df) >= 10:
+                lof = LocalOutlierFactor(n_neighbors=8, contamination=0.05)
+                outliers = lof.fit_predict(coords)
+                df_filtered = df[outliers == 1]  # 1 = inlier
+            else:
+                df_filtered = df.copy()  # Tidak cukup data, pakai semua mitra
 
             lat_center = df_filtered["LATITUDE"].mean()
             lon_center = df_filtered["LONGITUDE"].mean()
