@@ -34,22 +34,22 @@ uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
 
 if uploaded_file:
     try:
-        df = pd.read_excel(uploaded_file)
-        df.columns = df.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
+        df_awal = pd.read_excel(uploaded_file)
+        df.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
 
         # Pastikan kolom penting ada
         required_cols = ["MITRA", "LATITUDE", "LONGITUDE", "REGIONAL"]
-        if not all(col in df.columns for col in required_cols):
+        if not all(col in df_awal.columns for col in required_cols):
             st.error(f"❌ Kolom wajib {required_cols} tidak ditemukan.")
             st.stop()
 
         # Format koordinat
-        df["LATITUDE"] = df["LATITUDE"].astype(str).str.replace(",", ".").astype(float)
-        df["LONGITUDE"] = df["LONGITUDE"].astype(str).str.replace(",", ".").astype(float)
+        df_awal["LATITUDE"] = df_awal["LATITUDE"].astype(str).str.replace(",", ".").astype(float)
+        df_awal["LONGITUDE"] = df_awal["LONGITUDE"].astype(str).str.replace(",", ".").astype(float)
         st.success("✅ File berhasil dibaca!")
 
         # Pilihan regional
-        daftar_regional = sorted(df["REGIONAL"].dropna().unique())
+        daftar_regional = sorted(df_awal["REGIONAL"].dropna().unique())
         regional_pilih = st.selectbox("🌍 Pilih Regional yang ingin dipakai:", ["-- Pilih Regional --"] + daftar_regional)
 
         if regional_pilih == "-- Pilih Regional --":
@@ -57,7 +57,7 @@ if uploaded_file:
             st.stop()
 
         # Filter data sesuai regional
-        df_regional = df[df["REGIONAL"] == regional_pilih].reset_index(drop=True)
+        df_regional = df_awal[df_awal["REGIONAL"] == regional_pilih].reset_index(drop=True)
         df = df_regional
         st.write(f"Jumlah mitra di regional **{regional_pilih}**: {len(df)}")
         menu = st.radio("Pilih Menu:", [
@@ -231,13 +231,6 @@ if uploaded_file:
             if 'cek_ditekan' not in st.session_state:
                 st.session_state.cek_ditekan = False
 
-            # Filter sesuai regional yang dipilih
-            regional = st.session_state.get("regional_terpilih", None)
-            if regional is None:
-                st.warning("⚠️ Silakan pilih regional terlebih dahulu di menu awal.")
-                st.stop()
-
-            df = df[df['REGIONAL'] == regional]
             coords = df[['LATITUDE', 'LONGITUDE']].to_numpy()
             if len(df) >= 10:
                 lof = LocalOutlierFactor(n_neighbors=8, contamination=0.05)
