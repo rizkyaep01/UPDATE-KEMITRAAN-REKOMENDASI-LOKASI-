@@ -135,7 +135,7 @@ if uploaded_file:
                     progress = st.progress(0)
                     for i, (_, row) in enumerate(df_terdekat.iterrows()):
                         try:
-                            coords = ((row['Longitude'], row['Latitude']), (lon_baru, lat_baru))
+                            coords = ((lon_baru, lat_baru), (row['Longitude'], row['Latitude']))
                             route = client.directions(coords, format='geojson')
                             jarak = route['features'][0]['properties']['summary']['distance'] / 1000  # km
                             geometry = route['features'][0]['geometry']['coordinates']  # polyline
