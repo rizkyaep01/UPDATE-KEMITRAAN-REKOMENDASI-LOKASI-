@@ -35,7 +35,7 @@ uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
 if uploaded_file:
     try:
         df_awal = pd.read_excel(uploaded_file)
-        df.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
+        df_awal.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
 
         # Pastikan kolom penting ada
         required_cols = ["MITRA", "LATITUDE", "LONGITUDE", "REGIONAL"]
