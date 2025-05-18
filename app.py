@@ -21,8 +21,8 @@ st.set_page_config(page_title="D'FRESTO Tools", layout="centered")
 # ===== Custom Header with Logo and Red Title =====
 st.markdown(
     f"""
-    <h1 style="text-align:center; color:red;"> 
-        <img src="data:image/png;base64,{logo_base64}" width="50" height="50" /> 
+    <h1 style="text-align:center; color:red;">
+        <img src="data:image/png;base64,{logo_base64}" width="50" height="50" />
         D'FRESTO FRIED CHICKEN
     </h1>
     """,
@@ -61,6 +61,7 @@ if uploaded_file:
         df = df_regional
         st.write(f"Jumlah mitra di regional **{regional_pilih}**: {len(df)}")
         menu = st.radio("Pilih Menu:", [
+            "📋 Database Mitra",
             "📌 Lihat Lokasi Mitra",
             "📏 Cek Jarak Antar Mitra",
             "🌟 Rekomendasi Lokasi Baru"
@@ -68,7 +69,13 @@ if uploaded_file:
 
         icon_url = "logo dfresto.png"
 
-        # ===== MENU 1: LIHAT LOKASI MITRA =====
+        # ===== MENU 1: DATABASE MITRA =====
+        if menu == "📋 Database Mitra":
+            st.subheader("📋 Database Mitra")
+            filtered_df = df[df['Regional'] == selected_regional]
+            st.dataframe(filtered_df, use_container_width=True)
+
+        # ===== MENU 2: LIHAT LOKASI MITRA =====
         if menu == "📌 Lihat Lokasi Mitra":
             mean_lat = df["LATITUDE"].mean()
             mean_lon = df["LONGITUDE"].mean()
@@ -86,7 +93,7 @@ if uploaded_file:
             st.subheader("🗺️ Peta Lokasi Mitra")
             st_folium(m, width=700, height=500)
 
-        # ===== MENU 2: CEK JARAK ANTAR MITRA =====
+        # ===== MENU 3: CEK JARAK ANTAR MITRA =====
         elif menu == "📏 Cek Jarak Antar Mitra":
             lat_baru = st.number_input("🧭 Latitude mitra baru", value=-6.181080, format="%.6f")
             lon_baru = st.number_input("🧭 Longitude mitra baru", value=106.668730, format="%.6f")
@@ -256,7 +263,7 @@ if uploaded_file:
 
                     st_folium(m, width=700, height=500)
 
-        # ===== MENU 3: REKOMENDASI LOKASI BARU =====
+        # ===== MENU 4: REKOMENDASI LOKASI BARU =====
         elif menu == "🌟 Rekomendasi Lokasi Baru":
             st.info("🧠 Sistem akan mencari titik acak dalam radius 2 km dari pusat semua mitra dan menyaring yang aman (jarak > 1.5 km), serta tidak terlalu jauh dari jalur antar mitra.")
 
