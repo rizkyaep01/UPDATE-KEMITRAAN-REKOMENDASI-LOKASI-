@@ -72,7 +72,7 @@ if uploaded_file:
         # ===== MENU 1: DATABASE MITRA =====
         if menu == "📋 Database Mitra":
             st.subheader("📋 Database Mitra")
-            filtered_df = df[df['Regional'] == regional_pilih]
+            filtered_df = df[df['REGIONAL'] == regional_pilih]
             st.dataframe(filtered_df, use_container_width=True)
 
         # ===== MENU 2: LIHAT LOKASI MITRA =====
