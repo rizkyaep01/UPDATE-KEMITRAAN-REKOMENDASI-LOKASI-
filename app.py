@@ -16,7 +16,7 @@ with open("logo dfresto.png", "rb") as image_file:
     logo_base64 = base64.b64encode(image_file.read()).decode()
 
 # ===== Page Config =====
-st.set_page_config(page_title="D'FRESTO Tools", layout="centered")
+st.set_page_config(page_title="D'FRESTO Tools", layout="wide")
 
 # ===== Custom Header with Logo and Red Title =====
 st.markdown(
