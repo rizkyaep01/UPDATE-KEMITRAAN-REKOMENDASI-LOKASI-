@@ -22,7 +22,7 @@ st.set_page_config(page_title="D'FRESTO Tools", layout="wide")
 st.markdown(
     f"""
     <h1 style="text-align:center; color:red;">
-        <img src="data:image/png;base64,{logo_base64}" width="50" height="50" />
+        <img src="data:image/png;base64,{logo_base64}" width="100" height="100" />
         D'FRESTO FRIED CHICKEN
     </h1>
     """,
