@@ -91,7 +91,7 @@ if uploaded_file:
                 ).add_to(m)
 
             st.subheader("🗺️ Peta Lokasi Mitra")
-            st_folium(m, height=600, use_container_width=True)
+            st_folium(m, width=700, height=500)
 
         # ===== MENU 3: CEK JARAK ANTAR MITRA =====
         elif menu == "📏 Cek Jarak Antar Mitra":
