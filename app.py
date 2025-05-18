@@ -72,11 +72,11 @@ if uploaded_file:
         # ===== MENU 1: DATABASE MITRA =====
         if menu == "📋 Database Mitra":
             st.subheader("📋 Database Mitra")
-            filtered_df = df[df['Regional'] == selected_regional]
+            filtered_df = df[df['Regional'] == regional_pilih]
             st.dataframe(filtered_df, use_container_width=True)
 
         # ===== MENU 2: LIHAT LOKASI MITRA =====
-        if menu == "📌 Lihat Lokasi Mitra":
+        elif menu == "📌 Lihat Lokasi Mitra":
             mean_lat = df["LATITUDE"].mean()
             mean_lon = df["LONGITUDE"].mean()
             m = folium.Map(location=[mean_lat, mean_lon], zoom_start=14)
