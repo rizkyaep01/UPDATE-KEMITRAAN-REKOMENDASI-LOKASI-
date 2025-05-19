@@ -73,7 +73,6 @@ if use_github:
 
         # Filter data sesuai regional
         df = df_awal[df_awal["REGIONAL"] == regional_pilih].reset_index(drop=True)
-        st.write(f"Jumlah mitra di regional **{regional_pilih}**: {len(df)}")
 
         # Menu interaktif
         menu = st.radio("Pilih Menu:", [
