@@ -40,7 +40,7 @@ if use_github:
     try:
         # Ganti URL ini dengan link RAW dari file Excel di GitHub Anda
         url = "https://raw.githubusercontent.com/rizkyaep01/REPO/main/tes%20dummy.xlsx"
-        df_awal = pd.read_excel(url)
+        df_awal = url
         df_awal.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
         st.success("✅ Data berhasil dimuat dari GitHub.")
     except Exception as e:
