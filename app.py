@@ -39,7 +39,7 @@ df_awal = None  # Inisialisasi
 if use_github:
     try:
         # URL RAW GitHub untuk file Excel
-        url = "https://github.com/rizkyaep01/UPDATE-KEMITRAAN-REKOMENDASI-LOKASI-/blob/main/tes%20dummy.xlsx"
+        url = "https://raw.githubusercontent.com/rizkyaep01/REPO/main/tes%20dummy.xlsx"
         df_awal = pd.read_excel(url)
         df_awal.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
         st.success("✅ Data berhasil dimuat dari GitHub.")
