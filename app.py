@@ -376,8 +376,3 @@ else:
 
                 else:
                     st.warning("⚠️ Lokasi sudah padat, tidak ada rekomendasi yang aman ditemukan.")
-
-    except Exception as e:
-        st.error(f"❌ Terjadi kesalahan: {e}")
-else:
-    st.info("📄 Silakan upload file Excel terlebih dahulu untuk memulai.")
