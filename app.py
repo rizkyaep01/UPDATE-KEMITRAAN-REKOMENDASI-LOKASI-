@@ -67,7 +67,7 @@ use_github = st.checkbox("Gunakan data dari GitHub")
 
 df_awal = None  # Inisialisasi
 
-   if use_github:
+if use_github:
         try:
             # URL RAW GitHub untuk file Excel
             url = "https://github.com/rizkyaep01/REPO/raw/main/tes%20dummy.xlsx"
