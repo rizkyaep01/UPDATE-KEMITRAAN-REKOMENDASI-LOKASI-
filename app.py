@@ -60,12 +60,12 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-    st.subheader("📁 Pilih Sumber Data Lokasi Mitra")
+st.subheader("📁 Pilih Sumber Data Lokasi Mitra")
 
-    # Checkbox untuk memilih sumber data
-    use_github = st.checkbox("Gunakan data dari GitHub")
+# Checkbox untuk memilih sumber data
+use_github = st.checkbox("Gunakan data dari GitHub")
 
-    df_awal = None  # Inisialisasi
+df_awal = None  # Inisialisasi
 
     if use_github:
         try:
