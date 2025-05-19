@@ -28,15 +28,34 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-url = "https://raw.githubusercontent.com/rizkyaep01/REPO/main/tes%20dummy.xlsx"
 
-st.subheader("📁 Upload File Data Lokasi Mitra")
-uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
+st.subheader("📁 Pilih Sumber Data Lokasi Mitra")
 
-if uploaded_file:
+# Checkbox untuk memilih sumber data
+use_github = st.checkbox("Gunakan data dari GitHub")
+
+df_awal = None  # Inisialisasi
+
+if use_github:
     try:
+        # Ganti URL ini dengan link RAW dari file Excel di GitHub Anda
+        url = "https://raw.githubusercontent.com/rizkyaep01/REPO/main/tes%20dummy.xlsx"
         df_awal = pd.read_excel(url)
         df_awal.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
+        st.success("✅ Data berhasil dimuat dari GitHub.")
+    except Exception as e:
+        st.error(f"❌ Gagal memuat data dari GitHub: {e}")
+else:
+    st.subheader("📁 Upload File Data Lokasi Mitra")
+    uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
+
+    if uploaded_file:
+        try:
+            df_awal = pd.read_excel(uploaded_file)
+            df_awal.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
+            st.success("✅ Data berhasil dimuat dari file yang diupload.")
+        except Exception as e:
+            st.error(f"❌ Gagal membaca file Excel: {e}")
 
         # Pastikan kolom penting ada
         required_cols = ["MITRA", "LATITUDE", "LONGITUDE", "REGIONAL"]
