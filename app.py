@@ -45,19 +45,8 @@ if use_github:
         st.success("✅ Data berhasil dimuat dari GitHub.")
     except Exception as e:
         st.error(f"❌ Gagal memuat data dari GitHub: {e}")
-else:
-    st.subheader("📁 Upload File Data Lokasi Mitra")
-    uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
 
-    if uploaded_file:
-        try:
-            df_awal = pd.read_excel(uploaded_file)
-            df_awal.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
-            st.success("✅ Data berhasil dimuat dari file yang diupload.")
-        except Exception as e:
-            st.error(f"❌ Gagal membaca file Excel: {e}")
-
-if df_awal is not None:
+    if df_awal is not None:
         # Validasi kolom wajib
         required_cols = ["MITRA", "LATITUDE", "LONGITUDE", "REGIONAL"]
         if not all(col in df_awal.columns for col in required_cols):
@@ -671,3 +660,14 @@ if df_awal is not None:
 
                 else:
                     st.warning("⚠️ Lokasi sudah padat, tidak ada rekomendasi yang aman ditemukan.")
+else:
+    st.subheader("📁 Upload File Data Lokasi Mitra")
+    uploaded_file = st.file_uploader("Upload file Excel (.xlsx)", type="xlsx")
+
+    if uploaded_file:
+        try:
+            df_awal = pd.read_excel(uploaded_file)
+            df_awal.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
+            st.success("✅ Data berhasil dimuat dari file yang diupload.")
+        except Exception as e:
+            st.error(f"❌ Gagal membaca file Excel: {e}")
