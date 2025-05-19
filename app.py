@@ -32,7 +32,7 @@ st.markdown(
 st.subheader("📁 Pilih Sumber Data Lokasi Mitra")
 
 # Checkbox untuk memilih sumber data
-use_github = st.button("Klik untuk memulai")
+use_github = st.checkbox("Ceklis untuk memulai")
 
 df_awal = None  # Inisialisasi
 
