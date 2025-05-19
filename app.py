@@ -38,9 +38,9 @@ df_awal = None  # Inisialisasi
 
 if use_github:
     try:
-        # Ganti URL ini dengan link RAW dari file Excel di GitHub Anda
-        url = "https://raw.githubusercontent.com/rizkyaep01/REPO/main/tes%20dummy.xlsx"
-        df_awal = url
+        # URL RAW GitHub untuk file Excel
+        url = "https://github.com/rizkyaep01/REPO/raw/main/tes%20dummy.xlsx"
+        df_awal = pd.read_excel(url)
         df_awal.columns = df_awal.columns.str.upper().str.strip().str.replace("\xa0", "", regex=True)
         st.success("✅ Data berhasil dimuat dari GitHub.")
     except Exception as e:
@@ -57,37 +57,44 @@ else:
         except Exception as e:
             st.error(f"❌ Gagal membaca file Excel: {e}")
 
-        # Pastikan kolom penting ada
-        required_cols = ["MITRA", "LATITUDE", "LONGITUDE", "REGIONAL"]
-        if not all(col in df_awal.columns for col in required_cols):
-            st.error(f"❌ Kolom wajib {required_cols} tidak ditemukan.")
-            st.stop()
+if df_awal is not None:
+    # Validasi kolom wajib
+    required_cols = ["MITRA", "LATITUDE", "LONGITUDE", "REGIONAL"]
+    if not all(col in df_awal.columns for col in required_cols):
+        st.error(f"❌ Kolom wajib {required_cols} tidak ditemukan.")
+        st.stop()
 
-        # Format koordinat
+    # Format koordinat
+    try:
         df_awal["LATITUDE"] = df_awal["LATITUDE"].astype(str).str.replace(",", ".").astype(float)
         df_awal["LONGITUDE"] = df_awal["LONGITUDE"].astype(str).str.replace(",", ".").astype(float)
-        st.success("✅ File berhasil dibaca!")
+    except Exception as e:
+        st.error(f"❌ Format koordinat salah: {e}")
+        st.stop()
 
-        # Pilihan regional
-        daftar_regional = sorted(df_awal["REGIONAL"].dropna().unique())
-        regional_pilih = st.selectbox("🌍 Pilih Regional yang ingin dipakai:", ["-- Pilih Regional --"] + daftar_regional)
+    st.success("✅ File berhasil diproses!")
 
-        if regional_pilih == "-- Pilih Regional --":
-            st.info("⚠️ Silakan pilih regional terlebih dahulu untuk memproses data.")
-            st.stop()
+    # Pilihan regional
+    daftar_regional = sorted(df_awal["REGIONAL"].dropna().unique())
+    regional_pilih = st.selectbox("🌍 Pilih Regional yang ingin dipakai:", ["-- Pilih Regional --"] + daftar_regional)
 
-        # Filter data sesuai regional
-        df_regional = df_awal[df_awal["REGIONAL"] == regional_pilih].reset_index(drop=True)
-        df = df_regional
-        st.write(f"Jumlah mitra di regional **{regional_pilih}**: {len(df)}")
-        menu = st.radio("Pilih Menu:", [
-            "📋 Database Mitra",
-            "📌 Lihat Lokasi Mitra",
-            "📏 Cek Jarak Antar Mitra",
-            "🌟 Rekomendasi Lokasi Baru"
-        ])
+    if regional_pilih == "-- Pilih Regional --":
+        st.info("⚠️ Silakan pilih regional terlebih dahulu untuk memproses data.")
+        st.stop()
 
-        icon_url = "logo dfresto.png"
+    # Filter data sesuai regional
+    df = df_awal[df_awal["REGIONAL"] == regional_pilih].reset_index(drop=True)
+    st.write(f"Jumlah mitra di regional **{regional_pilih}**: {len(df)}")
+
+    # Menu interaktif
+    menu = st.radio("Pilih Menu:", [
+        "📋 Database Mitra",
+        "📌 Lihat Lokasi Mitra",
+        "📏 Cek Jarak Antar Mitra",
+        "🌟 Rekomendasi Lokasi Baru"
+    ])
+
+    icon_url = "logo dfresto.png"
 
         # ===== MENU 1: DATABASE MITRA =====
         if menu == "📋 Database Mitra":
