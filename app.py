@@ -18,12 +18,12 @@ with open("logo dfresto.png", "rb") as image_file:
 # ===== Page Config =====
 st.set_page_config(page_title="D'FRESTO Tools", layout="wide")
 
-# ===== Custom Header with 2-line Title =====
+# ===== Custom Header dengan Logo dan Judul Rata Tengah Dua Baris =====
 st.markdown(
     f"""
-    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 20px;">
         <img src="data:image/png;base64,{logo_base64}" style="width: 80px; height: 80px; margin-bottom: 10px;" />
-        <h1 style="color: red; font-size: 1.8rem; line-height: 1.2;">
+        <h1 style="color: red; font-size: 2rem; line-height: 1.2; margin: 0;">
             D'FRESTO<br>FRIED CHICKEN
         </h1>
     </div>
