@@ -57,7 +57,7 @@ else:
         except Exception as e:
             st.error(f"❌ Gagal membaca file Excel: {e}")
 
-    if df_awal is not None:
+if df_awal is not None:
         # Validasi kolom wajib
         required_cols = ["MITRA", "LATITUDE", "LONGITUDE", "REGIONAL"]
         if not all(col in df_awal.columns for col in required_cols):
