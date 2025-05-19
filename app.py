@@ -29,7 +29,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.subheader("📁 Pilih Sumber Data Lokasi Mitra")
+st.subheader("📁 Selamat datang di pusat Database D'Fresto")
 
 # Checkbox untuk memilih sumber data
 use_github = st.checkbox("Ceklis untuk memulai")
