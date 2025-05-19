@@ -29,36 +29,12 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-import streamlit as st
-import pandas as pd
-import openrouteservice
-from openrouteservice.exceptions import ApiError, HTTPError
-import folium
-from streamlit_folium import st_folium
-from time import sleep
-import random
-from geopy.distance import geodesic
-from sklearn.neighbors import LocalOutlierFactor
-import numpy as np
-import base64
+st.subheader("📁 Pilih Sumber Data Lokasi Mitra")
 
-# ===== Logo Base64 Encoding =====
-with open("logo dfresto.png", "rb") as image_file:
-    logo_base64 = base64.b64encode(image_file.read()).decode()
+# Checkbox untuk memilih sumber data
+use_github = st.checkbox("Gunakan data dari GitHub")
 
-# ===== Page Config =====
-st.set_page_config(page_title="D'FRESTO Tools", layout="wide")
-
-# ===== Custom Header with Logo and Red Title =====
-st.markdown(
-    f"""
-    <h1 style="text-align:center; color:red;">
-        <img src="data:image/png;base64,{logo_base64}" width="100" height="100" />
-        D'FRESTO FRIED CHICKEN
-    </h1>
-    """,
-    unsafe_allow_html=True
-)
+df_awal = None  # Inisialisasi
 
 if use_github:
     try:
