@@ -18,12 +18,14 @@ with open("logo dfresto.png", "rb") as image_file:
 # ===== Page Config =====
 st.set_page_config(page_title="D'FRESTO Tools", layout="wide")
 
-# ===== Custom Header with Responsive Design =====
+# ===== Custom Header with 2-line Title =====
 st.markdown(
     f"""
     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
         <img src="data:image/png;base64,{logo_base64}" style="width: 80px; height: 80px; margin-bottom: 10px;" />
-        <h1 style="color: red; font-size: 1.8rem;">D'FRESTO FRIED CHICKEN</h1>
+        <h1 style="color: red; font-size: 1.8rem; line-height: 1.2;">
+            D'FRESTO<br>FRIED CHICKEN
+        </h1>
     </div>
     """,
     unsafe_allow_html=True
