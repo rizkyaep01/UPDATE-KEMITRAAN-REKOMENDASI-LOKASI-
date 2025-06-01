@@ -12,7 +12,7 @@ import numpy as np
 import base64
 
 # ===== Logo Base64 Encoding =====
-with open("logo dfresto.png", "rb") as image_file:
+with open("logo potrait non BG.jpeg", "rb") as image_file:
     logo_base64 = base64.b64encode(image_file.read()).decode()
 
 # ===== Page Config =====
